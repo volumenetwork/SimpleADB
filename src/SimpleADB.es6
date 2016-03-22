@@ -64,11 +64,15 @@ export class SimpleADB {
      * @public
      */
     startApp (packageName, launchName) {
-        this.execAdbCommand([
+        var appName = packageName + '/' + launchName;
+
+        this.logger.info('Starting App: ' + appName);
+
+        return this.execAdbCommand([
             'shell',
             'am',
             'start',
-            packageName + '/' + launchName
+            appName
         ]);
     }
 
@@ -84,6 +88,29 @@ export class SimpleADB {
     forceStopApp (packageName) {
         this.logger.info('Force stopping: ' + packageName);
         return this.execAdbCommand(['shell', 'am', 'force-stop', packageName]);
+    }
+
+    /**
+     * Method to restart an app
+     *
+     * @method restartApp
+     *
+     * @param {string} packageName
+     * @param {string} launchName
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    restartApp (packageName, launchName) {
+        var self = this;
+
+        this.logger.info('Restarting App: ' + packageName + '/' + launchName);
+
+        return self.forceStopApp(packageName)
+            .then(function () {
+                self.startApp(packageName, launchName);
+            });
     }
 
     /**
