@@ -38,7 +38,13 @@ export class SimpleADB {
      * @public
      */
     connect (ipAddress) {
-        return this.execAdbCommand(['connect', ipAddress]);
+        var self = this;
+
+        //make sure that adb is disconnected first!
+        return self.disconnect()
+            .then(function () {
+                return self.execAdbCommand(['connect', ipAddress]);
+            });
     }
 
     /**
@@ -68,12 +74,7 @@ export class SimpleADB {
 
         this.logger.info('Starting App: ' + appName);
 
-        return this.execAdbCommand([
-            'shell',
-            'am',
-            'start',
-            appName
-        ]);
+        return this.execAdbCommand(['shell', 'am', 'start', appName]);
     }
 
     /**
@@ -156,7 +157,9 @@ export class SimpleADB {
             var proc = ChildProcess.spawn('adb', args || null);
 
             proc.on('close', function (code) {
-                self.logger.error('adb exited with code: ' + code)
+                if (parseInt(code) !== 0) {
+                    self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
+                }
 
                 return parseInt(code) === 0 ? resolve() : reject();
             });
