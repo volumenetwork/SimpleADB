@@ -26,6 +26,8 @@ Here is an example on how to reboot your android device via ADB
 
 var SimpleADB = require('simple-adb').SimpleADB;
 
+var sadb = new SimpleADB();
+
 sadb.connect('192.168.1.5')
      .then(function () {
         sadb.reboot()
@@ -42,6 +44,8 @@ sadb.connect('192.168.1.5')
 ### The SimpleADB Class
 
 ```
+var SimpleADB = require('simple-adb').SimpleADB;
+
 var sadb = new SimpleADB({
         logger: null, // optional - if populated, should be a Bunyan instance.
         logLevel: 'error' | 'warn' | 'info' //optional, ignored if `logger` is populated
@@ -53,6 +57,8 @@ var sadb = new SimpleADB({
 N.B. All methods return a Promise.
 
 ```js
+var SimpleADB = require('simple-adb').SimpleADB;
+
 var sadb = new SimpleADB();
 
 // to connect to a device (only one device can be connected to at a time)
