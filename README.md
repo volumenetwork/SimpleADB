@@ -43,7 +43,7 @@ sadb.connect('192.168.1.5')
 ```
 ### The SimpleADB Class
 
-```
+```js
 var SimpleADB = require('simple-adb').SimpleADB;
 
 var sadb = new SimpleADB({
