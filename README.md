@@ -96,7 +96,7 @@ sadb.push(fromPath, toPath);
 // copy a file from the android device
 sadb.pull(toPath, fromPath);
 
-sadb.captureScreenshot(pathToSaveScreenshot); // path is opening, will store to home directory if no path given
+sadb.captureScreenshot(pathToSaveScreenshot); // path is optional, will store to home directory if no path given
 ```
 
 ## Tests
