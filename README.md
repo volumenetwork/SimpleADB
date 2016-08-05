@@ -86,6 +86,17 @@ sadb.restartApp(packageName. launchName);
 
 // to perform any other task with adb
 sadb.execAdbCommand(args); //args in an array of augements
+
+// to perform any other shell task with adb
+sadb.execAdbShellCommand(args); //args in an array of augements
+
+// copy a file to the android device
+sadb.push(fromPath, toPath);
+
+// copy a file from the android device
+sadb.pull(toPath, fromPath);
+
+sadb.captureScreenshot(pathToSaveScreenshot); // path is opening, will store to home directory if no path given
 ```
 
 ## Tests
