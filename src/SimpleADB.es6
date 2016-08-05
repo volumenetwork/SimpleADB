@@ -2,6 +2,8 @@
 
 import bunyan from 'bunyan';
 import ChildProcess from 'child_process';
+import os from 'os';
+import _ from 'lodash';
 
 /**
  * @class SimpleADB
@@ -23,7 +25,7 @@ export class SimpleADB {
         this.logger = opts.logger || bunyan.createLogger({
             name: 'SimpleADB',
             stream: process.stdout,
-            level: opts.logLevel || 'error' 
+            level: opts.logLevel || 'info' 
         });
     }
 
@@ -74,7 +76,7 @@ export class SimpleADB {
 
         this.logger.info('Starting App: ' + appName);
 
-        return this.execAdbCommand(['shell', 'am', 'start', appName]);
+        return this.execAdbShellCommand(['am', 'start', appName]);
     }
 
     /**
@@ -88,7 +90,7 @@ export class SimpleADB {
      */
     forceStopApp (packageName) {
         this.logger.info('Force stopping: ' + packageName);
-        return this.execAdbCommand(['shell', 'am', 'force-stop', packageName]);
+        return this.execAdbShellCommand(['am', 'force-stop', packageName]);
     }
 
     /**
@@ -135,9 +137,164 @@ export class SimpleADB {
      */
     shutdown () {
         this.logger.info('Shutting down');
-        return this.execAdbCommand(['shell', 'input', 'keyevent', 'KEYCODE_POWER']);
+        return this.execShellAdbCommand(['input', 'keyevent', 'KEYCODE_POWER']);
     }
 
+
+    /**
+     * copy file from android device to local machien
+     *
+     * @method pull
+     * 
+     * @param String filePath
+     * @param String to
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    pull (filePath, to) {
+        this.logger.info('Copying file from "' + filePath + '" on device to "' + to + '"' );
+        return this.execAdbCommand(['pull', filePath, to]);
+    }
+
+    /**
+     * copy file from local machine to android device
+     *
+     * @method push
+     * 
+     * @param String filePath
+     * @param String to
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    push (filePath, to) {
+        this.logger.info('Copying file from "' + filePath + '" to "' + to + '" on device' );
+        return this.execAdbCommand(['push', filePath, to]);
+    }
+
+    /**
+     * @method ls
+     * 
+     * @return {Promise}
+     *
+     * TODO: 
+     *
+     * @public
+     */
+    ls (dir) {
+        this.logger.info('ls for dir: ' + dir);
+        return this.execAdbShellCommandAndCaptureOutput(['ls', dir]);
+    }
+
+    /**
+     * @method captureScreenshot
+     *
+     * @param String to
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    captureScreenshot (to) {
+        var self = this;
+        to = to || os.homedir(); 
+
+        this.logger.info('taking a screenshot');
+        return this.execAdbShellCommand(['screencap', '-p', '/sdcard/screen.png'])
+            .then( () => {
+                return self.pull('/sdcard/screen.png', to)
+            })
+            .then( () => {
+                return self.rm('/sdcard/screen.png');
+            });
+    }
+
+    /**
+     * Method to delete a file from the connected device
+     *
+     * @method rm
+     * 
+     * @param filePath String
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    rm (filePath) {
+        this.logger.info('deleting file on device: ' + filePath);
+        return this.execAdbShellCommand(['rm', filePath]);
+    }
+
+    /**
+     * @method execAdbShellCommand
+     * 
+     * @param args Array
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    execAdbShellCommand(args) {
+        return this.execAdbCommand(['shell'].concat(args));
+    }
+
+    /**
+     * @method execAdbShellCommandAndCaptureOutput
+     * 
+     * @param args Array
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    execAdbShellCommandAndCaptureOutput(args) {
+        return this.execAdbCommandAndCaptureOutput(['shell'].concat(args));
+    }
+
+    /**
+     *
+     * @method execAdbCommand
+     *
+     * @param {Array} [args]
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    execAdbCommandAndCaptureOutput (args) {
+        var self = this;
+
+        return new Promise(function (resolve, reject) {
+            var result  = [];
+            var proc    = ChildProcess.spawn('adb', args || null);
+
+            proc.stdout.on('data', data => {
+                data = data.toString().split('\n');
+                
+                //remove blank lines
+                result = _.reject(result.concat(data), (v) => {
+                    return v === ''
+                });
+
+                //remove \n at the end of lines
+                result = _.map (result, (v) => {
+                    return v.trim('\n');
+                });
+            });
+
+            proc.on('close', code => {
+                if (parseInt(code) !== 0) {
+                    self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
+                }
+
+                return parseInt(code) === 0 ? resolve(result) : reject();
+            });
+        });
+
+    };
 
     /**
      *
@@ -156,7 +313,7 @@ export class SimpleADB {
 
             var proc = ChildProcess.spawn('adb', args || null);
 
-            proc.on('close', function (code) {
+            proc.on('close', (code) => {
                 if (parseInt(code) !== 0) {
                     self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
                 }
