@@ -13,7 +13,6 @@
     "presets": ["es2015", "es2016"]
   },
   "scripts": {
-    "test": "jest --verbose --coverage",
     "compile": "./node_modules/.bin/gulp build",
     "clean": "./node_modules/.bin/gulp clean",
     "watch": "./node_modules/.bin/gulp watch",
@@ -31,6 +30,6 @@
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.1",
     "gulp-plumber": "^1.0.1",
-    "gulp-sourcemaps": "^1.6.0",
+    "gulp-sourcemaps": "^1.6.0"
   }
 }
