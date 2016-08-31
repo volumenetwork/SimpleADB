@@ -4,6 +4,16 @@ import bunyan from 'bunyan';
 import ChildProcess from 'child_process';
 import os from 'os';
 import _ from 'lodash';
+import commandExists from 'command-exists';
+import detect from 'async/detect';
+
+var potentialCommands = [
+    'adb',
+    '/usr/local/android/android-sdk-linux/platform-tools/adb',
+    '/usr/local/android-sdk/tools/adb',
+    '/usr/local/android/platform-tools/adb',
+    '/bin/adb'
+];
 
 /**
  * @class SimpleADB
@@ -27,8 +37,36 @@ export class SimpleADB {
             stream: process.stdout,
             level: opts.logLevel || 'info' 
         });
+
+        if (opts.path) {
+            potentialCommands.push(opts.path);
+        }
+
     }
 
+    fetchAdbCommand () {
+        return new Promise( (resolve, reject) => {
+            detect(potentialCommands, (v, cb) => {
+
+                commandExists(v, (err, result) => {
+                    if (err) {
+                        return cb(err);
+                    }
+
+                    return cb(null, result);
+                });
+
+                
+            }, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                return resolve(result);
+            });
+            
+        });
+    }
 
     /**
      * @method connect
@@ -268,30 +306,36 @@ export class SimpleADB {
         var self = this;
 
         return new Promise(function (resolve, reject) {
-            var result  = [];
-            var proc    = ChildProcess.spawn('adb', args || null);
 
-            proc.stdout.on('data', data => {
-                data = data.toString().split('\n');
-                
-                //remove blank lines
-                result = _.reject(result.concat(data), (v) => {
-                    return v === ''
+            self.fetchAdbCommand()
+                .then( cmd => {
+
+                    var result  = [];
+                    var proc    = ChildProcess.spawn(cmd, args || null);
+
+                    proc.stdout.on('data', data => {
+                        data = data.toString().split('\n');
+                        
+                        //remove blank lines
+                        result = _.reject(result.concat(data), v => {
+                            return v === ''
+                        });
+
+                        //remove \n at the end of lines
+                        result = _.map (result, v => {
+                            return v.trim('\n');
+                        });
+                    });
+
+                    proc.on('close', code => {
+                        if (parseInt(code) !== 0) {
+                            self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
+                        }
+
+                        return parseInt(code) === 0 ? resolve(result) : reject();
+                    });
+
                 });
-
-                //remove \n at the end of lines
-                result = _.map (result, (v) => {
-                    return v.trim('\n');
-                });
-            });
-
-            proc.on('close', code => {
-                if (parseInt(code) !== 0) {
-                    self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
-                }
-
-                return parseInt(code) === 0 ? resolve(result) : reject();
-            });
         });
 
     };
@@ -311,15 +355,21 @@ export class SimpleADB {
 
         return new Promise(function (resolve, reject) {
 
-            var proc = ChildProcess.spawn('adb', args || null);
+            self.fetchAdbCommand()
+                .then( cmd => {
 
-            proc.on('close', (code) => {
-                if (parseInt(code) !== 0) {
-                    self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
-                }
+                    var proc = ChildProcess.spawn(cmd, args || null);
 
-                return parseInt(code) === 0 ? resolve() : reject();
-            });
+                    proc.on('close', (code) => {
+                        if (parseInt(code) !== 0) {
+                            self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
+                        }
+
+                        return parseInt(code) === 0 ? resolve() : reject();
+                    });
+
+                });
+            
         });
 
     };

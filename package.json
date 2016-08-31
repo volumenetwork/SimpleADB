@@ -10,7 +10,10 @@
     "url": "https://github.com/irvingswiftj/SimpleADB"
   },
   "babel": {
-    "presets": ["es2015", "es2016"]
+    "presets": [
+      "es2015",
+      "es2016"
+    ]
   },
   "scripts": {
     "compile": "./node_modules/.bin/gulp build",
@@ -19,7 +22,10 @@
     "prepublish": "npm run compile"
   },
   "dependencies": {
-    "bunyan": "^1.8.0"
+    "async": "^2.0.1",
+    "bunyan": "^1.8.0",
+    "command-exists": "^1.0.2",
+    "lodash": "^4.14.2"
   },
   "devDependencies": {
     "babel-core": "^6.13.2",
