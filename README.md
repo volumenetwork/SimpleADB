@@ -50,7 +50,8 @@ var SimpleADB = require('simple-adb').SimpleADB;
 
 var sadb = new SimpleADB({
         logger: null, // optional - if populated, should be a Bunyan instance.
-        logLevel: 'error' | 'warn' | 'info' //optional, ignored if `logger` is populated
+        logLevel: 'error' | 'warn' | 'info', //optional, ignored if `logger` is populated
+        path: '/path/to/adb' //optional, if you have a custom path, this may be required
     });
 ```
 
