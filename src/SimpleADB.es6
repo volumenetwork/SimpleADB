@@ -310,7 +310,7 @@ export class SimpleADB {
                     'pm',
                     'install',
                     '-r',
-                    devicePath + localFile.split('/').pop();
+                    devicePath + localFile.split('/').pop()
                 ]);
             })
             .then( function () {
