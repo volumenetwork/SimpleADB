@@ -150,7 +150,7 @@ export class SimpleADB {
 
         return self.forceStopApp(packageName)
             .then(function () {
-                self.startApp(packageName, launchName);
+                return self.startApp(packageName, launchName);
             });
     }
 
@@ -243,7 +243,7 @@ export class SimpleADB {
         this.logger.info('taking a screenshot');
         return this.execAdbShellCommand(['screencap', '-p', '/sdcard/screen.png'])
             .then( () => {
-                return self.pull('/sdcard/screen.png', to)
+                return self.pull('/sdcard/screen.png', to);
             })
             .then( () => {
                 return self.rm('/sdcard/screen.png');
@@ -402,7 +402,7 @@ export class SimpleADB {
 
                         //remove blank lines
                         result = _.reject(result.concat(data), v => {
-                            return v === ''
+                            return v === '';
                         });
 
                         //remove \n at the end of lines
