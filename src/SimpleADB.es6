@@ -35,7 +35,7 @@ export class SimpleADB {
         this.logger = opts.logger || bunyan.createLogger({
             name: 'SimpleADB',
             stream: process.stdout,
-            level: opts.logLevel || 'info' 
+            level: opts.logLevel || 'info'
         });
 
         if (opts.path) {
@@ -56,7 +56,7 @@ export class SimpleADB {
                     return cb(null, result);
                 });
 
-                
+
             }, (err, result) => {
                 if (err) {
                     return reject(err);
@@ -64,7 +64,7 @@ export class SimpleADB {
 
                 return resolve(result);
             });
-            
+
         });
     }
 
@@ -183,7 +183,7 @@ export class SimpleADB {
      * copy file from android device to local machien
      *
      * @method pull
-     * 
+     *
      * @param String filePath
      * @param String to
      *
@@ -200,7 +200,7 @@ export class SimpleADB {
      * copy file from local machine to android device
      *
      * @method push
-     * 
+     *
      * @param String filePath
      * @param String to
      *
@@ -215,10 +215,10 @@ export class SimpleADB {
 
     /**
      * @method ls
-     * 
+     *
      * @return {Promise}
      *
-     * TODO: 
+     * TODO:
      *
      * @public
      */
@@ -238,7 +238,7 @@ export class SimpleADB {
      */
     captureScreenshot (to) {
         var self = this;
-        to = to || os.homedir(); 
+        to = to || os.homedir();
 
         this.logger.info('taking a screenshot');
         return this.execAdbShellCommand(['screencap', '-p', '/sdcard/screen.png'])
@@ -251,10 +251,26 @@ export class SimpleADB {
     }
 
     /**
+     * Method to delete a folder and it's contents from the connected device
+     *
+     * @method rmDir
+     *
+     * @param folderPath String
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    rmDir (folderPath) {
+        this.logger.info('deleting folder on device: ' + folderPath);
+        return this.execAdbShellCommand(['rm', '-Rf', folderPath]);
+    }
+
+    /**
      * Method to delete a file from the connected device
      *
      * @method rm
-     * 
+     *
      * @param filePath String
      *
      * @return {Promise}
@@ -263,12 +279,80 @@ export class SimpleADB {
      */
     rm (filePath) {
         this.logger.info('deleting file on device: ' + filePath);
-        return this.execAdbShellCommand(['rm', filePath]);
+        return this.execAdbShellCommand(['rm', '-f', filePath]);
+    }
+
+    /**
+     * Method to install an app from a locally store apk file
+     *
+     * @method install
+     *
+     * @param localfile String - full path to local file to copy and install
+     * @param devicePath String - path of where to copy the file to before installing
+     * @param packageName String - packageName of the application
+     * @param launchName String - launchName for the application
+     *
+     * @return {Promise}
+     *
+     * @public
+     *
+     * @async
+     */
+    install(localFile, devicePath, packageName, launchName) {
+        var self = this;
+
+        return self.push(localFile, devicePath)
+            .then( function () {
+                return self.stopApplication(packageName);
+            })
+            .then( function () {
+                return self.execShellAdbCommand([
+                    'pm',
+                    'install',
+                    '-r',
+                    devicePath + localFile.split('/').pop();
+                ]);
+            })
+            .then( function () {
+                return self.startApp(packageName, launchName);
+            });
+    }
+
+    /**
+     * Method to uninstall an app
+     *
+     * @method uninstall
+     *
+     * @param packageName String - packageName of the application
+     * @param cleanUp Boolean - remove cached data too
+     *
+     * @return {Promise}
+     *
+     * @public
+     *
+     * @async
+     */
+    uninstall (packageName, cleanUp) {
+        var self = this,
+            cleanUp = cleanUp || false;
+
+        function getArgs () {
+            if (cleanUp !== true) {
+                return ['shell', 'pm', 'uninstall', packageName];
+            } else {
+                return ['shell', 'pm', 'uninstall', '-k', packageName];
+            }
+        }
+
+        return self.forceStopApp(packageName)
+            .then(function () {
+                return self.execAdbShellCommand(getArgs());
+            });
     }
 
     /**
      * @method execAdbShellCommand
-     * 
+     *
      * @param args Array
      *
      * @return {Promise}
@@ -281,7 +365,7 @@ export class SimpleADB {
 
     /**
      * @method execAdbShellCommandAndCaptureOutput
-     * 
+     *
      * @param args Array
      *
      * @return {Promise}
@@ -315,7 +399,7 @@ export class SimpleADB {
 
                     proc.stdout.on('data', data => {
                         data = data.toString().split('\n');
-                        
+
                         //remove blank lines
                         result = _.reject(result.concat(data), v => {
                             return v === ''
@@ -369,7 +453,7 @@ export class SimpleADB {
                     });
 
                 });
-            
+
         });
 
     };
