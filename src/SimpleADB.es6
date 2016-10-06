@@ -162,11 +162,13 @@ export class SimpleADB {
      * @public
      */
     reboot () {
+        var self = this;
         this.logger.info('Rebooting');
-        return new Promise( function (resolve) {
-                this.execAdbCommand(['reboot']);
 
-                return setTimeout(reslove, 1000 * 30);
+        return new Promise( function (resolve) {
+                self.execAdbCommand(['reboot']);
+
+                return setTimeout(resolve, 1000 * 30);
         });
 
     }
@@ -243,15 +245,17 @@ export class SimpleADB {
      */
     captureScreenshot (to) {
         var self = this;
-        to = to || os.homedir();
+        to = to || os.homedir() + 'screenshot.png';
+
+        var fileName = to.split('/').pop();
 
         this.logger.info('taking a screenshot');
-        return this.execAdbShellCommand(['screencap', '-p', '/sdcard/screen.png'])
+        return this.execAdbShellCommand(['screencap', '-p', '/sdcard/' + fileName])
             .then( () => {
-                return self.pull('/sdcard/screen.png', to);
+                return self.pull('/sdcard/' + fileName, to.substring(0, to.lastIndexOf("/")) + '/');
             })
             .then( () => {
-                return self.rm('/sdcard/screen.png');
+                return self.rm('/sdcard/' + fileName);
             });
     }
 
@@ -308,10 +312,10 @@ export class SimpleADB {
 
         return self.push(localFile, devicePath)
             .then( function () {
-                return self.stopApplication(packageName);
+                return self.forceStopApp(packageName);
             })
             .then( function () {
-                return self.execShellAdbCommand([
+                return self.execAdbShellCommand([
                     'pm',
                     'install',
                     '-r',
@@ -343,9 +347,9 @@ export class SimpleADB {
 
         function getArgs () {
             if (cleanUp !== true) {
-                return ['shell', 'pm', 'uninstall', packageName];
+                return ['pm', 'uninstall', packageName];
             } else {
-                return ['shell', 'pm', 'uninstall', '-k', packageName];
+                return ['pm', 'uninstall', '-k', packageName];
             }
         }
 
@@ -450,6 +454,7 @@ export class SimpleADB {
                     var proc = ChildProcess.spawn(cmd, args || null);
 
                     proc.on('close', (code) => {
+
                         if (parseInt(code) !== 0) {
                             self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
                         }
