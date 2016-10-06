@@ -163,7 +163,12 @@ export class SimpleADB {
      */
     reboot () {
         this.logger.info('Rebooting');
-        return this.execAdbCommand(['reboot']);
+        return new Promise( function (resolve) {
+                this.execAdbCommand(['reboot']);
+
+                return setTimeout(reslove, 1000 * 30);
+        });
+
     }
 
     /**
