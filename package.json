@@ -1,6 +1,6 @@
 {
   "name": "simple-adb",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Module to easily use ADB with node.js",
   "main": "build/SimpleADB.js",
   "author": "James Irving-Swift <james@irving-swift.com> (http://www.irving-swift.com)",
