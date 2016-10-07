@@ -360,6 +360,29 @@ export class SimpleADB {
     }
 
     /**
+     * Method to upgrade an app
+     *
+     * @method upgrade
+     *
+     * @param localfile String - full path to local file to copy and install
+     * @param devicePath String - path of where to copy the file to before installing
+     * @param packageName String - packageName of the application
+     * @param launchName String - launchName for the application
+     *
+     * @return {Promise}
+     *
+     * @public
+     *
+     * @async
+     */
+    upgrade (localFile, devicePath, packageName, launchName) {
+        var self = this;
+
+        self.uninstall(packageName, false)
+            .then(self.install.bind(self, localFile, devicePath, packageName, launchName));
+    }
+
+    /**
      * @method execAdbShellCommand
      *
      * @param args Array
