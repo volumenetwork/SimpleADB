@@ -6,6 +6,7 @@ import os from 'os';
 import _ from 'lodash';
 import commandExists from 'command-exists';
 import detect from 'async/detect';
+import Promise from 'bluebird';
 
 var potentialCommands = [
     'adb',
@@ -14,6 +15,8 @@ var potentialCommands = [
     '/usr/local/android/platform-tools/adb',
     '/bin/adb'
 ];
+
+var timeoutMs = 5000;
 
 /**
  * @class SimpleADB
@@ -451,6 +454,10 @@ export class SimpleADB {
                         return parseInt(code) === 0 ? resolve(result) : reject();
                     });
 
+                })
+                .timeout(timeoutMs)
+                .catch(Promise.TimeoutError, function(e) {
+                    console.log('could not execute within ' + timeoutMs);
                 });
         });
 
@@ -485,6 +492,10 @@ export class SimpleADB {
                         return parseInt(code) === 0 ? resolve() : reject();
                     });
 
+                })
+                .timeout(timeoutMs)
+                .catch(Promise.TimeoutError, function(e) {
+                    console.log('could not execute within ' + timeoutMs);
                 });
 
         });

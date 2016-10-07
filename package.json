@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "async": "^2.0.1",
+    "bluebird": "^3.4.6",
     "bunyan": "^1.8.0",
     "command-exists": "^1.0.2",
     "lodash": "^4.14.2"
