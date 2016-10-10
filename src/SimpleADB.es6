@@ -350,9 +350,9 @@ export class SimpleADB {
 
         function getArgs () {
             if (cleanUp !== true) {
-                return ['pm', 'uninstall', packageName];
-            } else {
                 return ['pm', 'uninstall', '-k', packageName];
+            } else {
+                return ['pm', 'uninstall', packageName];
             }
         }
 
@@ -381,7 +381,7 @@ export class SimpleADB {
     upgrade (localFile, devicePath, packageName, launchName) {
         var self = this;
 
-        self.uninstall(packageName, false)
+        return self.uninstall(packageName, false)
             .then(self.install.bind(self, localFile, devicePath, packageName, launchName));
     }
 
