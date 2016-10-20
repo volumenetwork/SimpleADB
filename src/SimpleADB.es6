@@ -386,6 +386,24 @@ export class SimpleADB {
     }
 
     /**
+     * Method to get the resolution of the android device
+     *
+     * @method fetchResolution
+     *
+     * @return {Promise}
+     *
+     * @public
+     *
+     * @async
+     */
+    fetchResolution () {
+        return this.execAdbShellCommandAndCaptureOutput(['cat', '/sys/class/display/display0.HDMI/mode'])
+            .then( (result) => {
+                return (_.isArray(result)) ? result.pop() : result;
+            });
+    }
+
+    /**
      * @method execAdbShellCommand
      *
      * @param args Array
