@@ -8,7 +8,7 @@ import commandExists from 'command-exists';
 import detect from 'async/detect';
 import Promise from 'bluebird';
 
-var potentialCommands = [
+let potentialCommands = [
     'adb',
     '/usr/local/android/android-sdk-linux/platform-tools/adb',
     '/usr/local/android-sdk/tools/adb',
@@ -16,7 +16,7 @@ var potentialCommands = [
     '/bin/adb'
 ];
 
-var timeoutMs = 5000;
+const timeoutMs = 5000;
 
 /**
  * @class SimpleADB
@@ -47,10 +47,20 @@ export class SimpleADB {
 
     }
 
+    /**
+     * Method to get what the command is for adb as it can vary!
+     *
+     * @method fetchAdbCommand
+     *
+     * @return {Promise}
+     *
+     * @private
+     *
+     * @async
+     */
     fetchAdbCommand () {
         return new Promise( (resolve, reject) => {
             detect(potentialCommands, (v, cb) => {
-
                 commandExists(v, (err, result) => {
                     if (err) {
                         return cb(err);
@@ -81,7 +91,7 @@ export class SimpleADB {
      * @public
      */
     connect (ipAddress) {
-        var self = this;
+        let self = this;
 
         //make sure that adb is disconnected first!
         return self.disconnect()
@@ -113,7 +123,7 @@ export class SimpleADB {
      * @public
      */
     startApp (packageName, launchName) {
-        var appName = packageName + '/' + launchName;
+        let appName = packageName + '/' + launchName;
 
         this.logger.info('Starting App: ' + appName);
 
@@ -147,7 +157,7 @@ export class SimpleADB {
      * @public
      */
     restartApp (packageName, launchName) {
-        var self = this;
+        let self = this;
 
         this.logger.info('Restarting App: ' + packageName + '/' + launchName);
 
@@ -165,7 +175,7 @@ export class SimpleADB {
      * @public
      */
     reboot () {
-        var self = this;
+        let self = this;
         this.logger.info('Rebooting');
 
         return new Promise( function (resolve) {
@@ -194,8 +204,8 @@ export class SimpleADB {
      *
      * @method pull
      *
-     * @param String filePath
-     * @param String to
+     * @param {String} filePath
+     * @param {String} to
      *
      * @return {Promise}
      *
@@ -211,8 +221,8 @@ export class SimpleADB {
      *
      * @method push
      *
-     * @param String filePath
-     * @param String to
+     * @param {String} filePath
+     * @param {String} to
      *
      * @return {Promise}
      *
@@ -240,17 +250,17 @@ export class SimpleADB {
     /**
      * @method captureScreenshot
      *
-     * @param String to
+     * @param {String} to
      *
      * @return {Promise}
      *
      * @public
      */
     captureScreenshot (to) {
-        var self = this;
+        let self = this;
         to = to || os.homedir() + 'screenshot.png';
 
-        var fileName = to.split('/').pop();
+        let fileName = to.split('/').pop();
 
         this.logger.info('taking a screenshot');
         return this.execAdbShellCommand(['screencap', '-p', '/sdcard/' + fileName])
@@ -299,10 +309,10 @@ export class SimpleADB {
      *
      * @method install
      *
-     * @param localfile String - full path to local file to copy and install
-     * @param devicePath String - path of where to copy the file to before installing
-     * @param packageName String - packageName of the application
-     * @param launchName String - launchName for the application
+     * @param {String} localFile - full path to local file to copy and install
+     * @param {String} devicePath - path of where to copy the file to before installing
+     * @param {String} packageName - packageName of the application
+     * @param {String} launchName - launchName for the application
      *
      * @return {Promise}
      *
@@ -311,7 +321,7 @@ export class SimpleADB {
      * @async
      */
     install(localFile, devicePath, packageName, launchName) {
-        var self = this;
+        let self = this;
 
         return self.push(localFile, devicePath)
             .then( function () {
@@ -335,8 +345,8 @@ export class SimpleADB {
      *
      * @method uninstall
      *
-     * @param packageName String - packageName of the application
-     * @param cleanUp Boolean - remove cached data too
+     * @param {String} packageName - packageName of the application
+     * @param {Boolean} cleanUp - remove cached data too
      *
      * @return {Promise}
      *
@@ -345,20 +355,20 @@ export class SimpleADB {
      * @async
      */
     uninstall (packageName, cleanUp) {
-        var self = this,
-            cleanUp = cleanUp || false;
+        let self = this,
+            args = ['pm', 'uninstall'];
 
-        function getArgs () {
-            if (cleanUp !== true) {
-                return ['pm', 'uninstall', '-k', packageName];
-            } else {
-                return ['pm', 'uninstall', packageName];
-            }
+        cleanUp = cleanUp || false;
+
+        if (cleanUp !== true) {
+            args.push('-k');
         }
+
+        args.push(packageName);
 
         return self.forceStopApp(packageName)
             .then(function () {
-                return self.execAdbShellCommand(getArgs());
+                return self.execAdbShellCommand(args);
             });
     }
 
@@ -367,10 +377,10 @@ export class SimpleADB {
      *
      * @method upgrade
      *
-     * @param localfile String - full path to local file to copy and install
-     * @param devicePath String - path of where to copy the file to before installing
-     * @param packageName String - packageName of the application
-     * @param launchName String - launchName for the application
+     * @param {String} localFile - full path to local file to copy and install
+     * @param {String} devicePath - path of where to copy the file to before installing
+     * @param {String} packageName - packageName of the application
+     * @param {String} launchName - launchName for the application
      *
      * @return {Promise}
      *
@@ -379,10 +389,54 @@ export class SimpleADB {
      * @async
      */
     upgrade (localFile, devicePath, packageName, launchName) {
-        var self = this;
+        let self = this;
 
         return self.uninstall(packageName, false)
             .then(self.install.bind(self, localFile, devicePath, packageName, launchName));
+    }
+
+    /**
+     *
+     * Method to fetch a list of all installed packages names on the device
+     *
+     * @method fetchInstalledPackageNames
+     *
+     * @param {Object} opts
+     *
+     *
+     * @return {Promise}
+     *
+     * @public
+     *
+     * @async
+     */
+    fetchInstalledPackageNames (opts) {
+        let args = ['pm','list','packages'],
+            defaults = {
+                'systemOnly': false,
+                'thirdPartyOnly': true,
+                'paths': false,
+                'allDisabled': false,
+                'allEnabled': false
+            },
+            flags = {
+                'systemOnly': '-s',
+                'thirdPartyOnly': '-3',
+                'paths': '-f',
+                'allDisabled': '-d',
+                'allEnabled': '-e'
+            };
+
+        opts = _.assign(defaults, opts || {});
+
+        _.forEach(opts, (v, k) =>{
+            if (v === true) {
+                args.push(flags[k]);
+            }
+        });
+
+        return this.execAdbShellCommandAndCaptureOutput(args)
+            .then(_.compact);
     }
 
     /**
@@ -440,15 +494,15 @@ export class SimpleADB {
      * @public
      */
     execAdbCommandAndCaptureOutput (args) {
-        var self = this;
+        let self = this;
 
         return new Promise(function (resolve, reject) {
 
             self.fetchAdbCommand()
                 .then( cmd => {
 
-                    var result  = [];
-                    var proc    = ChildProcess.spawn(cmd, args || null);
+                    let result  = [];
+                    let proc    = ChildProcess.spawn(cmd, args || null);
 
                     proc.stdout.on('data', data => {
                         data = data.toString().split('\n');
@@ -492,14 +546,14 @@ export class SimpleADB {
      * @public
      */
     execAdbCommand (args) {
-        var self = this;
+        let self = this;
 
         return new Promise(function (resolve, reject) {
 
             self.fetchAdbCommand()
                 .then( cmd => {
 
-                    var proc = ChildProcess.spawn(cmd, args || null);
+                    let proc = ChildProcess.spawn(cmd, args || null);
 
                     proc.on('close', (code) => {
 
