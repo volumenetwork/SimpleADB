@@ -43,5 +43,5 @@ gulp.task('watch', () => {
     gulp.watch(paths.scripts, ['build']);
 });
 
-gulp.task('default', ['watch', 'build']);
+gulp.task('default', ['clean', 'test', 'build']);
 gulp.task('prepublish', ['clean', 'test', 'build']);
