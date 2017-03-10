@@ -336,7 +336,11 @@ export class SimpleADB {
                 ]);
             })
             .then( function () {
-                return self.startApp(packageName, launchName);
+                if (launchName) {
+                    return self.startApp(packageName, launchName);
+                } else {
+                    return Promise.resolve();
+                }
             });
     }
 
