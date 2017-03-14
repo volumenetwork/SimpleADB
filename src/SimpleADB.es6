@@ -131,6 +131,30 @@ export class SimpleADB {
     }
 
     /**
+     * Method to start an app when you do not know the launch name
+     *
+     * @method startAppByPackageName
+     *
+     * @param {String} packageName
+     *
+     * @return {Promise}
+     *
+     * @public
+     */
+    startAppByPackageName (packageName) {
+        this.logger.info('Starting App by packagename: ' + packageName);
+
+        return this.execAdbShellCommand([
+            'monkey',
+            '-p',
+            packageName,
+            '-c',
+            'android.intent.category.LAUNCHER',
+            '1;'
+        ])
+    }
+
+    /**
      * @method forceStopApp
      *
      * @param {string} packageName
