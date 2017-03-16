@@ -346,6 +346,33 @@ export class SimpleADB {
     }
 
     /**
+     * Method to change owner of a file or folder
+     * 
+     * @method chown
+     * 
+     * @param {String} path - path of file or folder
+     * @param {String} user - user that will own the file or folder
+     * @param {Boolean} opts.recursive - set to true if operation should be performed recursively
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    chown (path, user, opts) {
+        opts = opts || {
+            recursive: false
+        };
+
+        let args = [user+':'+user, path];
+
+        if (opts.recursive === true) {
+            args.shift('-R');
+        }
+
+        return this.execAdbShellCommand(args);
+    }
+
+    /**
      * Method to install an app from a locally store apk file
      *
      * @method install
