@@ -329,6 +329,23 @@ export class SimpleADB {
     }
 
     /**
+     * Method to move a file or folder
+     * 
+     * @method mv
+     * 
+     * @param {String} from - path from
+     * @param {String} to - path to
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    mv (from, to) {
+        this.logger.info('moving: ' + from + 'to: ' + to);
+        return this.execAdbShellCommand(['mv', from, to]);
+    }
+
+    /**
      * Method to install an app from a locally store apk file
      *
      * @method install
