@@ -439,6 +439,76 @@ export class SimpleADB {
     }
 
     /**
+     * Method to check if a package is installed
+     * 
+     * @method isInstalled
+     * 
+     * @param {String} packageName
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    isInstalled (packageName) {
+        this.fetchInstalledPackageNames()
+            .then( function (installedApps) {
+                installedApps = installedApps || [];
+
+                return _.map(installedApps, function (v) {
+                    return v.split(':').pop();
+                });
+            })
+            .then( function (installedApps) {
+                return installedApps.indexOf(packageName) <= 0;
+            });
+    }
+
+    /**
+     * Method that resolve when isInstalled becomes true
+     * 
+     * @method resolveWhenInstalled
+     * 
+     * @param {String} packageName
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    resolveWhenInstalled (packageName) {
+        let self = this,
+            retries = 0,
+            maxRetries = 60,
+            pid = null;
+            wait = 5 * 1000;
+
+        return new Promise(function (resolve, reject) {
+
+            function isInstalled() {
+                if (pid !== null ) {
+                    clearTimeout(pid);
+                }
+
+                self.isInstalled(packageName)
+                    .then(function(isInstalled) {
+                        if (isInstalled === true) {
+                            return resolve();
+                        }
+
+                        if (retries >= maxRetries) {
+                            return reject();
+                        }
+
+                        setTimeout(isInstalled.bind(self), wait);
+                    })
+
+
+            }
+
+
+        });
+    }
+
+    /**
      * Method to install an app from a locally store apk file
      *
      * @method install
@@ -638,7 +708,7 @@ export class SimpleADB {
 
             self.fetchAdbCommand()
                 .then( cmd => {
-console.log(args);
+
                     let result  = [];
                     let proc    = ChildProcess.spawn(cmd, args || null);
 
