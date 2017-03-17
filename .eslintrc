@@ -1,0 +1,16 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "impliedStrict": true
+        }
+    },
+    "rules": {
+        "curly": 2,
+        "eqeqeq": 2
+    },
+    "env": {
+        "node": true
+    }
+}

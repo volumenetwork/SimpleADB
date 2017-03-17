@@ -7,6 +7,7 @@ const   gulp          = require('gulp'),
         del           = require('del'),
         plumber       = require('gulp-plumber'),
         util          = require('gulp-util'),
+        eslint        = require('gulp-eslint'),
         babelRegister = require('babel-core/register');
 
 let paths = {
@@ -16,6 +17,12 @@ let paths = {
 
 gulp.task('clean', () => {
     return del(['build']);
+});
+
+gulp.task('lint', function () {
+    gulp.src(paths.scripts)
+        .pipe(eslint())
+        .pipe(eslint.failOnError());
 });
 
 gulp.task('test', function () {
@@ -43,5 +50,5 @@ gulp.task('watch', () => {
     gulp.watch(paths.scripts, ['build']);
 });
 
-gulp.task('default', ['clean', 'test', 'build']);
-gulp.task('prepublish', ['clean', 'test', 'build']);
+gulp.task('default', ['clean', 'lint', 'test', 'build']);
+gulp.task('prepublish', ['clean', 'test', 'lint', 'build']);

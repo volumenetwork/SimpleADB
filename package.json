@@ -38,6 +38,7 @@
     "del": "^2.2.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.1",
+    "gulp-eslint": "^3.0.1",
     "gulp-mocha": "^4.0.1",
     "gulp-plumber": "^1.0.1",
     "gulp-sourcemaps": "^1.6.0",
