@@ -358,18 +358,84 @@ export class SimpleADB {
      * 
      * @public
      */
-    chown (path, user, opts) {
+    chown (path, user, group, opts) {
         opts = opts || {
-            recursive: false
+            recursive: true,
+            busybox: true
         };
 
-        let args = [user+':'+user, path];
+        let args = [];
 
-        if (opts.recursive === true) {
-            args.shift('-R');
+        if (args.busybox) {
+            args.push('busybox');
         }
 
+        args.push('chown');
+
+
+        if (opts.recursive === true) {
+            args.push('-R');
+        }
+
+        args.push(user+':'+group);
+        args.push(path);
+
         return this.execAdbShellCommand(args);
+    }
+
+    /**
+     * Method to does an ls -la on the data folder for the given application
+     * 
+     * @method fetchApplicationDataFolderInfo
+     * 
+     * @param {String} packageName
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    fetchApplicationDataFolderInfo (packageName) {
+        return this.execAdbShellCommandAndCaptureOutput(['busybox', 'ls', '-l', '-n', '/data/data/', '|', 'grep', '"' + packageName + '"']);
+    }
+
+    /**
+     * Method to find the user that represents an application
+     * 
+     * @method fetchApplicationUser
+     * 
+     * @param {String} packageName
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    fetchApplicationUser (packageName) {
+        let appUserIndex = 2;
+
+        return this.fetchApplicationDataFolderInfo(packageName)
+            .then(function (result) {
+                return _.compact(result[0].split(' '))[appUserIndex];
+            });
+    }
+
+    /**
+     * Method to find the group that represents an application
+     * 
+     * @method fetchApplicationGroup
+     * 
+     * @param {String} packageName
+     * 
+     * @return {Promise}
+     * 
+     * @public
+     */
+    fetchApplicationGroup (packageName) {
+        let appGroupIndex = 3;
+
+        return this.fetchApplicationDataFolderInfo(packageName)
+            .then(function (result) {
+                return _.compact(result[0].split(' '))[appGroupIndex];
+            });
     }
 
     /**
@@ -572,7 +638,7 @@ export class SimpleADB {
 
             self.fetchAdbCommand()
                 .then( cmd => {
-
+console.log(args);
                     let result  = [];
                     let proc    = ChildProcess.spawn(cmd, args || null);
 
