@@ -495,7 +495,7 @@ export class SimpleADB {
                         }
 
                         if (retries >= maxRetries) {
-                            return reject();
+                            return reject(new Error('Hit max reties on wait for package name to appear'));
                         }
 
                         setTimeout(isInstalled.bind(self), wait);
