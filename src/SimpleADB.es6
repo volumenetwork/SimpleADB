@@ -450,7 +450,7 @@ export class SimpleADB {
      * @public
      */
     isInstalled (packageName) {
-        this.fetchInstalledPackageNames()
+        return this.fetchInstalledPackageNames()
             .then( function (installedApps) {
                 installedApps = installedApps || [];
 
@@ -459,7 +459,7 @@ export class SimpleADB {
                 });
             })
             .then( function (installedApps) {
-                return installedApps.indexOf(packageName) <= 0;
+                return installedApps.indexOf(packageName) >= 0;
             });
     }
 
@@ -478,12 +478,12 @@ export class SimpleADB {
         let self = this,
             retries = 0,
             maxRetries = 60,
-            pid = null;
+            pid = null,
             wait = 5 * 1000;
 
         return new Promise(function (resolve, reject) {
 
-            function isInstalled() {
+            let isInstalledCheck = function () {
                 if (pid !== null ) {
                     clearTimeout(pid);
                 }
@@ -498,13 +498,11 @@ export class SimpleADB {
                             return reject(new Error('Hit max reties on wait for package name to appear'));
                         }
 
-                        setTimeout(isInstalled.bind(self), wait);
+                        pid = setTimeout(isInstalledCheck, wait);
                     })
-
-
             }
 
-
+            isInstalledCheck();
         });
     }
 
