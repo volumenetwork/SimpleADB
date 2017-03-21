@@ -366,7 +366,7 @@ export class SimpleADB {
 
         let args = [];
 
-        if (args.busybox) {
+        if (opts.busybox) {
             args.push('busybox');
         }
 
