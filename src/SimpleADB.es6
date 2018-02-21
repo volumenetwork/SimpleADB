@@ -705,7 +705,7 @@ export class SimpleADB {
 
             self.fetchAdbCommand()
                 .then( cmd => {
-                    let deviceArgs = this.getDeviceArgs(args);
+                    let deviceArgs = self.getDeviceArgs(args);
                     let result  = [];
                     let proc    = ChildProcess.spawn(cmd, deviceArgs);
 
@@ -757,7 +757,7 @@ export class SimpleADB {
 
             self.fetchAdbCommand()
                 .then( cmd => {
-                    let deviceArgs = this.getDeviceArgs(args);
+                    let deviceArgs = self.getDeviceArgs(args);
                     let proc = ChildProcess.spawn(cmd, deviceArgs);
 
                     proc.on('close', (code) => {
