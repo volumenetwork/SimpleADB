@@ -17,6 +17,7 @@ let potentialCommands = [
 ];
 
 const timeoutMs = 5000;
+const defaultAdbPort = 5555;
 
 /**
  * @class SimpleADB
@@ -40,6 +41,8 @@ export class SimpleADB {
             stream: process.stdout,
             level: opts.logLevel || 'info'
         });
+
+        this.adbDevice = '';
 
         if (opts.path) {
             potentialCommands.push(opts.path);
@@ -91,13 +94,9 @@ export class SimpleADB {
      * @public
      */
     connect (ipAddress) {
-        let self = this;
+        this.adbDevice = `${ ipAddress }:${ defaultAdbPort }`;
 
-        //make sure that adb is disconnected first!
-        return self.disconnect()
-            .then(function () {
-                return self.execAdbCommand(['connect', ipAddress]);
-            });
+        return this.execAdbCommand(['connect', ipAddress]);
     }
 
     /**
@@ -330,14 +329,14 @@ export class SimpleADB {
 
     /**
      * Method to move a file or folder
-     * 
+     *
      * @method mv
-     * 
+     *
      * @param {String} from - path from
      * @param {String} to - path to
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     mv (from, to) {
@@ -347,15 +346,15 @@ export class SimpleADB {
 
     /**
      * Method to change owner of a file or folder
-     * 
+     *
      * @method chown
-     * 
+     *
      * @param {String} path - path of file or folder
      * @param {String} user - user that will own the file or folder
      * @param {Boolean} opts.recursive - set to true if operation should be performed recursively
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     chown (path, user, group, opts) {
@@ -385,13 +384,13 @@ export class SimpleADB {
 
     /**
      * Method to does an ls -la on the data folder for the given application
-     * 
+     *
      * @method fetchApplicationDataFolderInfo
-     * 
+     *
      * @param {String} packageName
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     fetchApplicationDataFolderInfo (packageName) {
@@ -400,13 +399,13 @@ export class SimpleADB {
 
     /**
      * Method to find the user that represents an application
-     * 
+     *
      * @method fetchApplicationUser
-     * 
+     *
      * @param {String} packageName
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     fetchApplicationUser (packageName) {
@@ -420,13 +419,13 @@ export class SimpleADB {
 
     /**
      * Method to find the group that represents an application
-     * 
+     *
      * @method fetchApplicationGroup
-     * 
+     *
      * @param {String} packageName
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     fetchApplicationGroup (packageName) {
@@ -440,13 +439,13 @@ export class SimpleADB {
 
     /**
      * Method to check if a package is installed
-     * 
+     *
      * @method isInstalled
-     * 
+     *
      * @param {String} packageName
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     isInstalled (packageName) {
@@ -465,13 +464,13 @@ export class SimpleADB {
 
     /**
      * Method that resolve when isInstalled becomes true
-     * 
+     *
      * @method resolveWhenInstalled
-     * 
+     *
      * @param {String} packageName
-     * 
+     *
      * @return {Promise}
-     * 
+     *
      * @public
      */
     resolveWhenInstalled (packageName) {
@@ -706,9 +705,9 @@ export class SimpleADB {
 
             self.fetchAdbCommand()
                 .then( cmd => {
-
+                    let deviceArgs = self.getDeviceArgs(args);
                     let result  = [];
-                    let proc    = ChildProcess.spawn(cmd, args || null);
+                    let proc    = ChildProcess.spawn(cmd, deviceArgs);
 
                     proc.stdout.on('data', data => {
                         data = data.toString().split('\n');
@@ -726,7 +725,7 @@ export class SimpleADB {
 
                     proc.on('close', code => {
                         if (parseInt(code) !== 0) {
-                            self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
+                            self.logger.error('ADB command `adb ' + deviceArgs.join(' ') + '` exited with code:' + code);
                         }
 
                         return parseInt(code) === 0 ? resolve(result) : reject();
@@ -758,13 +757,13 @@ export class SimpleADB {
 
             self.fetchAdbCommand()
                 .then( cmd => {
-
-                    let proc = ChildProcess.spawn(cmd, args || null);
+                    let deviceArgs = self.getDeviceArgs(args);
+                    let proc = ChildProcess.spawn(cmd, deviceArgs);
 
                     proc.on('close', (code) => {
 
                         if (parseInt(code) !== 0) {
-                            self.logger.error('ADB command `adb ' + args.join(' ') + '` exited with code:' + code);
+                            self.logger.error('ADB command `adb ' + deviceArgs.join(' ') + '` exited with code:' + code);
                         }
 
                         return parseInt(code) === 0 ? resolve() : reject();
@@ -778,5 +777,19 @@ export class SimpleADB {
 
         });
 
+    };
+
+    /**
+     *
+     * @method getDeviceArgs
+     *
+     * @param {Array} [args]
+     *
+     * @return {Array}
+     *
+     * @public
+     */
+    getDeviceArgs (args) {
+        return ['-s', this.adbDevice, ...args];
     };
 }
