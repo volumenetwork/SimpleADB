@@ -789,7 +789,7 @@ export class SimpleADB {
      *
      * @public
      */
-    execAdbCommand (args) {
+    getDeviceArgs (args) {
         return ['-s', this.adbDevice, ...args];
     };
 }
