@@ -2,7 +2,7 @@
 
 This is a module to execute simple commands with ADB
 
-[![Build Status](https://travis-ci.org/irvingswiftj/SimpleADB.svg?branch=master)](https://travis-ci.org/irvingswiftj/SimpleADB)
+[![Build Status](https://travis-ci.org/volumenetwork/SimpleADB.svg?branch=master)](https://travis-ci.org/volumenetwork/SimpleADB)
 
 ## Basic Usage
 

@@ -7,7 +7,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/irvingswiftj/SimpleADB"
+    "url": "https://github.com/volumenetwork/SimpleADB"
   },
   "babel": {
     "presets": [
