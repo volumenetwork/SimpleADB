@@ -218,7 +218,7 @@ export class SimpleADB {
      */
     shutdown () {
         this.logger.info('Shutting down');
-        return this.execShellAdbCommand(['input', 'keyevent', 'KEYCODE_POWER']);
+        return this.execAdbShellCommand(['reboot', '-p']);
     }
 
 
